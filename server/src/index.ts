@@ -1,9 +1,14 @@
+/* eslint-disable import/first */
 require('dotenv').config();
 
-// eslint-disable-next-line import/first
 import express from 'express';
+import { ApolloServer } from 'apollo-server-express';
+import { resolvers, typeDefs } from './graphql';
 
+const server = new ApolloServer({ typeDefs, resolvers });
 const app = express();
+
+server.applyMiddleware({ app, path: '/api' });
 
 app.get('/', (_req, res) => {
   res.send('Hello, world!\n');
