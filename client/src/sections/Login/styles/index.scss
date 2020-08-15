@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+.login {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  &-btn {
+    align-items: center;
+    background-color: #4285F4;
+    border: none;
+    color: #ffffff;
+    display: flex;
+    font-family: 'Roboto';
+    height: 50px;
+    justify-content: flex-start;
+    padding: 0;
+    width: 240px;
+
+    &__icon {
+      height: auto;
+      width: 50px;
+    }
+
+    &__text {
+      flex: 1;
+      font-size: 18px;
+    }
+
+    &:focus {
+      outline-color: #176df7;
+    }
+  }
+}
