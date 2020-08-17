@@ -17,7 +17,8 @@ const initialUser: User = {
   id: null,
   displayName: null,
   email: null,
-  avatar: null
+  avatar: null,
+  token: null
 };
 
 const App = () => {

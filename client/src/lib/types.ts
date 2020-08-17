@@ -3,4 +3,5 @@ export interface User {
   displayName: string | null;
   email: string | null;
   avatar: string | null;
+  token: string | null;
 }

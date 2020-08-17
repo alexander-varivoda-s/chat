@@ -7,6 +7,7 @@ export const LOG_IN = gql`
       displayName
       avatar
       email
+      token
     }
   }
 `;

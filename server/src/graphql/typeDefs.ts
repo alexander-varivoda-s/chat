@@ -10,6 +10,7 @@ export const typeDefs = gql`
     displayName: String!,
     avatar: String!
     email: String!
+    token: String!
   }
 
   type Query {

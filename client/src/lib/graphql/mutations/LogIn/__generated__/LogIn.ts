@@ -15,6 +15,7 @@ export interface LogIn_logIn {
   displayName: string;
   avatar: string;
   email: string;
+  token: string;
 }
 
 export interface LogIn {

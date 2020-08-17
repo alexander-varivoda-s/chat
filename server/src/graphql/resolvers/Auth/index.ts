@@ -1,4 +1,5 @@
 import { IResolvers } from 'apollo-server-express';
+import { uuid } from 'uuidv4';
 import { Google } from '../../../lib/api';
 import { Database, User } from '../../../lib/types';
 import { LogInArgs } from './types';
@@ -20,6 +21,7 @@ async function logInViaGoogle(code: string): Promise<User | undefined> {
     displayName,
     avatar,
     email,
+    token: uuid(),
   };
 }
 

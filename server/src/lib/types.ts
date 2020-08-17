@@ -6,6 +6,7 @@ export interface User {
   displayName: string;
   avatar: string;
   email: string;
+  token: string;
 }
 
 export interface Database {
