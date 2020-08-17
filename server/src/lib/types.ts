@@ -2,8 +2,10 @@
 import { Collection } from 'mongodb';
 
 export interface User {
-  first_name: string;
-  last_name: string;
+  _id: string;
+  displayName: string;
+  avatar: string;
+  email: string;
 }
 
 export interface Database {

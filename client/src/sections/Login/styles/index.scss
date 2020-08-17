@@ -10,6 +10,7 @@
     align-items: center;
     background-color: #4285F4;
     border: none;
+    cursor: pointer;
     color: #ffffff;
     display: flex;
     font-family: 'Roboto';
@@ -17,6 +18,11 @@
     justify-content: flex-start;
     padding: 0;
     width: 240px;
+
+    &--disabled {
+      background-color: gray;
+      cursor: not-allowed;
+    }
 
     &__icon {
       height: auto;

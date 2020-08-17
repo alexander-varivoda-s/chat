@@ -16,4 +16,18 @@ export const Google = {
       'https://www.googleapis.com/auth/userinfo.profile',
     ],
   }),
+  signIn: async (code: string) => {
+    const { tokens } = await client.getToken(code);
+
+    client.setCredentials(tokens);
+
+    const { data } = await google.people({ version: 'v1', auth: client }).people.get({
+      resourceName: 'people/me',
+      personFields: 'emailAddresses,names,photos',
+    });
+
+    return {
+      user: data,
+    };
+  },
 };
