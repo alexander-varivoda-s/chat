@@ -1,58 +1,63 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { useApolloClient, useMutation } from '@apollo/client';
 import { Alert, Layout, Spin, Typography } from 'antd';
-import cx from 'classnames';
 import React, { useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet';
-import { Redirect, useLocation } from 'react-router-dom';
+import { Redirect, useHistory } from 'react-router-dom';
 import { LOG_IN } from '../../lib/graphql';
 import { LogIn as LogInData, LogInVariables } from '../../lib/graphql/mutations/LogIn/__generated__/LogIn';
 import { AUTH_URL } from '../../lib/graphql/queries/AuthUrl';
 import { AuthUrl as AuthUrlData } from '../../lib/graphql/queries/AuthUrl/__generated__/AuthUrl';
 import { User } from '../../lib/types';
-import { displaySuccessNotification } from '../../lib/utils';
-import GoogleLightDisabled from './assets/google_light_disabled.svg';
+import { displayErrorMessage, displaySuccessNotification } from '../../lib/utils';
 import GoogleLightNormal from './assets/google_light_normal.svg';
 import './styles/index.scss';
 
 interface Props {
+  user: User,
   setUser: (user: User) => void;
 }
 
 const { Content } = Layout;
 const { Title } = Typography;
 
-const getCodeFromUrl = (search: string) => {
-  const params = new URLSearchParams(search);
-
+const getCodeFromUrl = () => {
+  const params = new URL(window.location.href).searchParams;
   return params.get('code');
 }
 
-export const Login = ({ setUser }: Props) => {
-  const location = useLocation();
-  const code = getCodeFromUrl(location.search);
-
-  const { data, loading, error } = useQuery<AuthUrlData>(AUTH_URL, {
-    skip: code !== null
-  });
+export const Login = ({ user, setUser }: Props) => {
+  const client = useApolloClient();
+  const history = useHistory();
 
   const [logIn, { data: logInData, loading: loggingIn, error: logInError }] = useMutation<LogInData, LogInVariables>(LOG_IN, {
     onCompleted: (data) => {
-      if (data && data.logIn) {
-        setUser(data.logIn);
+      const user = data?.logIn;
+      if (user) {
+        setUser(user);
+        sessionStorage.setItem('token', user.token);
         displaySuccessNotification('Log In', 'You have successfully logged in!');
       }
     },
   });
-
   const logInRef = useRef(logIn);
 
-  const handleSignInBtnClick = () => {
-    if (data && data.authUrl) {
-      window.location.href = data.authUrl;
+  const handleSignInBtnClick = async () => {
+    try {
+      const { data } = await client.query<AuthUrlData>({
+        query: AUTH_URL
+      });
+
+      if (data && data.authUrl) {
+        window.location.href = data.authUrl;
+      }
+    } catch {
+      displayErrorMessage('Log in failed! Please try again later!');
     }
   }
 
   useEffect(() => {
+    const code = getCodeFromUrl();
+
     if (code) {
       logInRef.current({
         variables: {
@@ -62,15 +67,7 @@ export const Login = ({ setUser }: Props) => {
         }
       })
     }
-  }, [code])
-
-  if (loading) {
-    return (
-      <Content className="login">
-        <Spin size="large" />
-      </Content>
-    );
-  }
+  }, []);
 
   if (loggingIn) {
     return (
@@ -86,6 +83,10 @@ export const Login = ({ setUser }: Props) => {
     );
   }
 
+  if (user.id) {
+    history.replace('/');
+  }
+
   const logInErrorElement = logInError ? (
     <Alert
       type="error"
@@ -93,8 +94,6 @@ export const Login = ({ setUser }: Props) => {
       description="Failed to log in using your Google account. Please try again later!"
     />
   ) : null;
-
-  const loginDisabled = error !== undefined;
 
   return (
     <Content className="login">
@@ -105,15 +104,14 @@ export const Login = ({ setUser }: Props) => {
       <Title level={2}>Use your Google account to sign in</Title>
       <button
         aria-label="Sign in with Google"
-        className={cx("login-btn", { "login-btn--disabled": loginDisabled })}
-        disabled={loginDisabled}
+        className="login-btn"
         onClick={handleSignInBtnClick}
       >
         <img
           alt="Google Icon"
           aria-label="Google Icon"
           className="login-btn__icon"
-          src={loginDisabled ? GoogleLightDisabled : GoogleLightNormal}
+          src={GoogleLightNormal}
         />
         <span className="login-btn__text">Sign in with Google</span>
       </button>

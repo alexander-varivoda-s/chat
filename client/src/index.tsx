@@ -29,20 +29,27 @@ const initialUser: User = {
 const App = () => {
   const [user, setUser] = useState<User>(initialUser);
 
-  const [logIn, { loading }] = useMutation<LogInData, LogInVariables>(LOG_IN);
+  const [logIn] = useMutation<LogInData, LogInVariables>(LOG_IN, {
+    onCompleted: (data) => {
+      const user = data?.logIn;
+      if (user) {
+        setUser(user);
+        sessionStorage.setItem('token', user.token);
+      }
+    }
+  });
   const logInRef = useRef(logIn);
 
   useEffect(() => {
     logInRef.current();
-  }, [])
-
+  }, []);
 
   return (
     <Layout className="app">
       <Switch>
         <Route exact path="/" component={Home} />
         <Route exact path="/login">
-          <Login setUser={setUser} />
+          <Login user={user} setUser={setUser} />
         </Route>
         <Route component={NotFound} />
       </Switch>
