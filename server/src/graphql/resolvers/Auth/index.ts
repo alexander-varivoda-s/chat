@@ -1,10 +1,23 @@
 import { IResolvers } from 'apollo-server-express';
-import { uuid } from 'uuidv4';
+import crypto from 'crypto';
+import { Request, Response } from 'express';
 import { Google } from '../../../lib/api';
 import { Database, User } from '../../../lib/types';
 import { LogInArgs } from './types';
 
-async function logInViaGoogle(code: string): Promise<User | undefined> {
+const cookieOptions = {
+  httpOnly: true,
+  sameSite: true,
+  secure: true,
+  signed: true,
+};
+
+async function logInViaGoogle(
+  code: string,
+  token: string,
+  db: Database,
+  res: Response,
+): Promise<User> {
   const { user } = await Google.signIn(code);
 
   const displayName = user?.names?.[0]?.displayName || null;
@@ -16,14 +29,67 @@ async function logInViaGoogle(code: string): Promise<User | undefined> {
     throw new Error('Google login failed');
   }
 
-  return {
+  const { value: updateResult } = await db.users.findOneAndUpdate({
     _id: id,
-    displayName,
-    avatar,
-    email,
-    token: uuid(),
+  }, {
+    $set: {
+      avatar,
+      displayName,
+      email,
+      token,
+    },
+  }, {
+    returnOriginal: false,
+  });
+
+  let userData = updateResult;
+
+  if (!userData) {
+    const { ops: [insertResult] } = await db.users.insertOne({
+      _id: id,
+      avatar,
+      displayName,
+      email,
+      token,
+    });
+
+    userData = insertResult;
+  }
+
+  res.cookie('userId', id, {
+    ...cookieOptions,
+    maxAge: 24 * 60 * 60 * 365 * 1000,
+  });
+
+  return {
+    ...userData,
   };
 }
+
+const logInViaCookie = async (
+  token: string,
+  db: Database,
+  req: Request,
+  res: Response,
+): Promise<User | undefined> => {
+  const { userId } = req.signedCookies;
+
+  const { value: updateResult } = await db.users.findOneAndUpdate({
+    _id: userId,
+  }, {
+    $set: {
+      token,
+    },
+  }, {
+    returnOriginal: false,
+  });
+
+  if (!updateResult) {
+    res.clearCookie('userId', cookieOptions);
+  }
+
+  return updateResult;
+};
 
 export const authResolvers: IResolvers = {
   Query: {
@@ -39,10 +105,17 @@ export const authResolvers: IResolvers = {
     logIn: (
       _root: undefined,
       { input }: LogInArgs,
-      { db }: { db: Database },
-    ): Promise<any> => {
+      { db, req, res }: { db: Database, req: Request, res: Response },
+    ): Promise<User | undefined> => {
       try {
-        return logInViaGoogle(input.code);
+        const code = input ? input.code : null;
+        const token = crypto.randomBytes(16).toString('hex');
+
+        const result = code
+          ? logInViaGoogle(code, token, db, res)
+          : logInViaCookie(token, db, req, res);
+
+        return result;
       } catch (error) {
         throw new Error(`Failed to sign in user: ${error}`);
       }
