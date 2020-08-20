@@ -6,8 +6,8 @@ export const typeDefs = gql`
   }
 
   type User {
-    id: ID!,
-    displayName: String!,
+    id: ID!
+    displayName: String!
     avatar: String!
     email: String!
     token: String!
@@ -19,5 +19,6 @@ export const typeDefs = gql`
 
   type Mutation {
     logIn(input: LogInInput): User
+    logOut: User
   }
 `;

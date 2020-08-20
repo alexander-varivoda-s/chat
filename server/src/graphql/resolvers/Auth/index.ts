@@ -120,5 +120,16 @@ export const authResolvers: IResolvers = {
         throw new Error(`Failed to sign in user: ${error}`);
       }
     },
+    logOut: (
+      _root: undefined,
+      _args: {},
+      { res }: { res: Response },
+    ) => {
+      try {
+        res.clearCookie('userId', cookieOptions);
+      } catch (error) {
+        throw new Error('Failed to log out.');
+      }
+    },
   },
 };

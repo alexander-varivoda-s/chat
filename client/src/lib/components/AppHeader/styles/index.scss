@@ -1,0 +1,35 @@
+.app-header {
+  background-color: #422F45;
+}
+
+h1.logo {
+  margin: 0;
+
+  a.logo-link {
+    color: white;
+  }
+
+  .logo-link {
+    &__text {
+      padding-left: 20px;
+    }
+  }
+}
+
+$dropdownColor: #eeeaef;
+
+.profile-dropdown {
+  .ant-dropdown {
+    &-arrow {
+      border-left-color: $dropdownColor;
+      border-top-color: $dropdownColor;
+    }
+    &-menu {
+      background-color: $dropdownColor;
+
+      &-item:hover {
+        background-color: $dropdownColor;
+      }
+    }
+  }
+}

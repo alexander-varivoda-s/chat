@@ -4,6 +4,7 @@ import 'antd/dist/antd.css';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { AppHeader } from './lib/components';
 import { LOG_IN } from './lib/graphql';
 import { LogIn as LogInData, LogInVariables } from './lib/graphql/mutations/LogIn/__generated__/LogIn';
 import { User } from './lib/types';
@@ -46,6 +47,7 @@ const App = () => {
 
   return (
     <Layout className="app">
+      <AppHeader user={user} setUser={setUser} />
       <Switch>
         <Route exact path="/" component={Home} />
         <Route exact path="/login">

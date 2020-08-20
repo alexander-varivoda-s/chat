@@ -19,7 +19,7 @@ export interface LogIn_logIn {
 }
 
 export interface LogIn {
-  logIn: LogIn_logIn;
+  logIn: LogIn_logIn | null;
 }
 
 export interface LogInVariables {
