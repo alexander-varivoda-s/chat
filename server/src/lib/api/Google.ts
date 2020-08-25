@@ -5,7 +5,7 @@ const { G_CLIENT_ID, G_CLIENT_SECRET, PUBLIC_URL } = process.env;
 const client = new google.auth.OAuth2(
   G_CLIENT_ID,
   G_CLIENT_SECRET,
-  `${PUBLIC_URL}/login`,
+  PUBLIC_URL,
 );
 
 export const Google = {

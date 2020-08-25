@@ -2,7 +2,7 @@ import { useApolloClient, useMutation } from '@apollo/client';
 import { Alert, Layout, Spin, Typography } from 'antd';
 import React, { useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet';
-import { Redirect, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { LOG_IN } from '../../lib/graphql';
 import { LogIn as LogInData, LogInVariables } from '../../lib/graphql/mutations/LogIn/__generated__/LogIn';
 import { AUTH_URL } from '../../lib/graphql/queries/AuthUrl';
@@ -12,30 +12,27 @@ import { displayErrorMessage, displaySuccessNotification } from '../../lib/utils
 import GoogleLightNormal from './assets/google_light_normal.svg';
 import './styles/index.scss';
 
+
 interface Props {
-  user: User,
+  code: string;
   setUser: (user: User) => void;
 }
 
 const { Content } = Layout;
 const { Title } = Typography;
 
-const getCodeFromUrl = () => {
-  const params = new URL(window.location.href).searchParams;
-  return params.get('code');
-}
-
-export const Login = ({ user, setUser }: Props) => {
-  const client = useApolloClient();
+export const Login = ({ code, setUser }: Props) => {
   const history = useHistory();
+  const client = useApolloClient();
 
-  const [logIn, { data: logInData, loading: loggingIn, error: logInError }] = useMutation<LogInData, LogInVariables>(LOG_IN, {
+  const [logIn, { loading: loggingIn, error: logInError }] = useMutation<LogInData, LogInVariables>(LOG_IN, {
     onCompleted: (data) => {
       const user = data?.logIn;
       if (user) {
         setUser(user);
         sessionStorage.setItem('token', user.token);
         displaySuccessNotification('Log In', 'You have successfully logged in!');
+        history.replace('/');
       }
     },
   });
@@ -56,8 +53,6 @@ export const Login = ({ user, setUser }: Props) => {
   }
 
   useEffect(() => {
-    const code = getCodeFromUrl();
-
     if (code) {
       logInRef.current({
         variables: {
@@ -67,7 +62,7 @@ export const Login = ({ user, setUser }: Props) => {
         }
       })
     }
-  }, []);
+  }, [code]);
 
   if (loggingIn) {
     return (
@@ -75,16 +70,6 @@ export const Login = ({ user, setUser }: Props) => {
         <Spin size="large" tip="Logging in..." />
       </Content>
     );
-  }
-
-  if (logInData && logInData.logIn) {
-    return (
-      <Redirect to="/" />
-    );
-  }
-
-  if (user.id) {
-    history.replace('/');
   }
 
   const logInErrorElement = logInError ? (
@@ -117,4 +102,4 @@ export const Login = ({ user, setUser }: Props) => {
       </button>
     </Content >
   );
-};
+}

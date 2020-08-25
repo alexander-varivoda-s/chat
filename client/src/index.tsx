@@ -1,15 +1,17 @@
 import { ApolloClient, ApolloProvider, InMemoryCache, useMutation } from '@apollo/client';
-import { Layout } from 'antd';
+import { Layout, Spin } from 'antd';
 import 'antd/dist/antd.css';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { AppHeader } from './lib/components';
 import { LOG_IN } from './lib/graphql';
 import { LogIn as LogInData, LogInVariables } from './lib/graphql/mutations/LogIn/__generated__/LogIn';
 import { User } from './lib/types';
-import { Home, Login, NotFound } from './sections';
+import { Home, Login } from './sections';
 import './styles/index.scss';
+
+const { Content } = Layout;
 
 const client = new ApolloClient({
   uri: '/api',
@@ -27,10 +29,15 @@ const initialUser: User = {
   token: null
 };
 
+const getCodeFromUrl = () => {
+  const params = new URL(window.location.href).searchParams;
+  return params.get('code') || '';
+}
+
 const App = () => {
   const [user, setUser] = useState<User>(initialUser);
 
-  const [logIn] = useMutation<LogInData, LogInVariables>(LOG_IN, {
+  const [logIn, { loading }] = useMutation<LogInData, LogInVariables>(LOG_IN, {
     onCompleted: (data) => {
       const user = data?.logIn;
       if (user) {
@@ -39,22 +46,30 @@ const App = () => {
       }
     }
   });
+
   const logInRef = useRef(logIn);
+  const code = getCodeFromUrl();
 
   useEffect(() => {
-    logInRef.current();
-  }, []);
+    if (!code && !user.id) {
+      logInRef.current();
+    }
+  }, [code, user]);
+
+  if (loading) {
+    return (
+      <Layout className="app app--loading">
+        <Content>
+          <Spin size="large" tip="Starting app..." />
+        </Content>
+      </Layout>
+    )
+  }
 
   return (
     <Layout className="app">
       <AppHeader user={user} setUser={setUser} />
-      <Switch>
-        <Route exact path="/" component={Home} />
-        <Route exact path="/login">
-          <Login user={user} setUser={setUser} />
-        </Route>
-        <Route component={NotFound} />
-      </Switch>
+      {user.id ? <Home /> : <Login code={code} setUser={setUser} />}
     </Layout>
   );
 }

@@ -1,5 +1,9 @@
 .app-header {
   background-color: #422F45;
+
+  &__inner {
+    height: 100%;
+  }
 }
 
 h1.logo {

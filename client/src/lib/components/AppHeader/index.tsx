@@ -40,19 +40,11 @@ export const AppHeader = ({ user, setUser }: Props) => {
         <Button type="link" onClick={() => logOut()}>Log Out</Button>
       </Menu.Item>
     </Menu>
-  ) : (
-      <Menu>
-        <Menu.Item>
-          <Link to="/login">
-            <Button type="link">Log In</Button>
-          </Link>
-        </Menu.Item>
-      </Menu>
-    );
+  ) : null;
 
   return (
     <Header className="app-header">
-      <Row align="middle" justify="space-between">
+      <Row align="middle" justify="space-between" className="app-header__inner">
         <Col>
           <Title level={1} className="logo">
             <Link to="/" className="logo-link">
@@ -61,16 +53,18 @@ export const AppHeader = ({ user, setUser }: Props) => {
             </Link>
           </Title>
         </Col>
-        <Col>
-          <Dropdown
-            arrow
-            overlay={menu}
-            placement="bottomCenter"
-            overlayClassName="profile-dropdown"
-          >
-            <Avatar src={user.avatar || ''} size={48} />
-          </Dropdown>
-        </Col>
+        {menu ? (
+          <Col>
+            <Dropdown
+              arrow
+              overlay={menu}
+              placement="bottomCenter"
+              overlayClassName="profile-dropdown"
+            >
+              <Avatar src={user.avatar || ''} size={48} />
+            </Dropdown>
+          </Col>
+        ) : null}
       </Row>
     </Header>
   )
