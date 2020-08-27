@@ -1,0 +1,94 @@
+.home {
+  &__sider {
+    background-color: #452849;
+  }
+
+  .direct-messages {
+    $white: #ffffff;
+    $text-color: rgba($white, 0.7);
+    $text-color-hover: $white;
+    $text-color-active: rgba($white, 0.4);
+
+    font-size: 12px;
+    font-weight: 500;
+    padding: 0 25px 0 45px;
+
+    &__btn {
+      align-items: center;
+      display: flex;
+      padding: 0;
+      width: 100%;
+
+      .online-indicator {
+        margin-left: auto;
+      }
+
+      .anticon {
+        color: $text-color;
+      }
+
+      .ant-typography {
+        color: $text-color;
+        font-size: 12px;
+      }
+
+      &:hover {
+        .ant-typography, .anticon {
+          color: $text-color-hover;
+        }
+      }
+
+      &:active {
+        .ant-typography, .anticon {
+          color: $text-color-active;
+        }
+      }
+    }
+
+    &.ant-list-split .ant-list-item {
+      border-bottom: 0;
+    }
+
+    .ant-list {
+      &-header {
+        border-bottom: 0;
+        padding-bottom: 6px;
+
+        .ant-typography, span {
+          text-transform: uppercase;
+        }
+
+        .anticon {
+          &-plus {
+            font-size: 11px;
+            margin-left: auto;
+          }
+        }
+      }
+
+      &-item {
+        padding: 5px 0;
+
+        .direct-messages__btn {
+          width: auto;
+        }
+      }
+    }
+
+    .online-indicator {
+      $active: rgb(19, 163, 19);
+      $inactive: rgb(241, 50, 50);
+      $size: 12px;
+
+      background-color: $inactive;
+      border-radius: 50%;
+      display: inline-block;
+      height: $size;
+      width: $size;
+
+      &--active {
+        background-color: $active;
+      }
+    }
+  }
+}
