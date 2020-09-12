@@ -1,6 +1,15 @@
 import { WechatOutlined } from '@ant-design/icons';
 import { useMutation } from '@apollo/client';
-import { Avatar, Button, Col, Dropdown, Layout, Menu, Row, Typography } from 'antd';
+import {
+  Avatar,
+  Button,
+  Col,
+  Dropdown,
+  Layout,
+  Menu,
+  Row,
+  Typography
+} from 'antd';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { LOG_OUT } from '../../graphql/mutations/LogOut';
@@ -12,12 +21,12 @@ import './styles/index.scss';
 interface Props {
   user: User;
   setUser(user: User): void;
-};
+}
 
 const { Title } = Typography;
 const { Header } = Layout;
 
-export const AppHeader = ({ user, setUser }: Props) => {
+export const AppHeader = ({ user, setUser }: Props): JSX.Element => {
   const [logOut] = useMutation<LogOutData>(LOG_OUT, {
     onCompleted: () => {
       sessionStorage.removeItem('token');
@@ -37,7 +46,9 @@ export const AppHeader = ({ user, setUser }: Props) => {
   const menu = user.id ? (
     <Menu>
       <Menu.Item>
-        <Button type="link" onClick={() => logOut()}>Log Out</Button>
+        <Button type="link" onClick={() => logOut()}>
+          Log Out
+        </Button>
       </Menu.Item>
     </Menu>
   ) : null;
@@ -67,5 +78,5 @@ export const AppHeader = ({ user, setUser }: Props) => {
         ) : null}
       </Row>
     </Header>
-  )
+  );
 };

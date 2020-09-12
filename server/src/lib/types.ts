@@ -1,6 +1,7 @@
-/* eslint-disable camelcase */
+import { Request, Response } from 'express';
 import { Collection, ObjectId } from 'mongodb';
 
+// eslint-disable-next-line no-shadow
 export enum ChatType {
   Direct = 'DIRECT',
   Channel = 'CHANNEL'
@@ -17,13 +18,14 @@ export interface User {
 export interface Message {
   _id: ObjectId;
   content: string;
-  author: ObjectId;
+  author: string;
   created: Date;
 }
 
 export interface Chat {
   _id: ObjectId;
   type: ChatType;
+  participants: User[];
   messages: ObjectId[];
 }
 
@@ -31,4 +33,10 @@ export interface Database {
   users: Collection<User>;
   chats: Collection<Chat>;
   messages: Collection<Message>;
+}
+
+export interface ResolverContext {
+  db: Database;
+  req: Request;
+  res: Response;
 }

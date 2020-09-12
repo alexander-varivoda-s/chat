@@ -4,14 +4,19 @@ import React, { useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 import { useHistory } from 'react-router-dom';
 import { LOG_IN } from '../../lib/graphql';
-import { LogIn as LogInData, LogInVariables } from '../../lib/graphql/mutations/LogIn/__generated__/LogIn';
+import {
+  LogIn as LogInData,
+  LogInVariables
+} from '../../lib/graphql/mutations/LogIn/__generated__/LogIn';
 import { AUTH_URL } from '../../lib/graphql/queries/AuthUrl';
 import { AuthUrl as AuthUrlData } from '../../lib/graphql/queries/AuthUrl/__generated__/AuthUrl';
 import { User } from '../../lib/types';
-import { displayErrorMessage, displaySuccessNotification } from '../../lib/utils';
+import {
+  displayErrorMessage,
+  displaySuccessNotification
+} from '../../lib/utils';
 import GoogleLightNormal from './assets/google_light_normal.svg';
 import './styles/index.scss';
-
 
 interface Props {
   code: string;
@@ -21,20 +26,26 @@ interface Props {
 const { Content } = Layout;
 const { Title } = Typography;
 
-export const Login = ({ code, setUser }: Props) => {
+export const Login = ({ code, setUser }: Props): JSX.Element => {
   const history = useHistory();
   const client = useApolloClient();
 
-  const [logIn, { loading: loggingIn, error: logInError }] = useMutation<LogInData, LogInVariables>(LOG_IN, {
+  const [logIn, { loading: loggingIn, error: logInError }] = useMutation<
+    LogInData,
+    LogInVariables
+  >(LOG_IN, {
     onCompleted: (data) => {
       const user = data?.logIn;
       if (user) {
         setUser(user);
         sessionStorage.setItem('token', user.token);
-        displaySuccessNotification('Log In', 'You have successfully logged in!');
+        displaySuccessNotification(
+          'Log In',
+          'You have successfully logged in!'
+        );
         history.replace('/');
       }
-    },
+    }
   });
   const logInRef = useRef(logIn);
 
@@ -50,17 +61,17 @@ export const Login = ({ code, setUser }: Props) => {
     } catch {
       displayErrorMessage('Log in failed! Please try again later!');
     }
-  }
+  };
 
   useEffect(() => {
     if (code) {
       logInRef.current({
         variables: {
           input: {
-            code,
+            code
           }
         }
-      })
+      });
     }
   }, [code]);
 
@@ -90,6 +101,7 @@ export const Login = ({ code, setUser }: Props) => {
       <button
         aria-label="Sign in with Google"
         className="login-btn"
+        type="button"
         onClick={handleSignInBtnClick}
       >
         <img
@@ -100,6 +112,6 @@ export const Login = ({ code, setUser }: Props) => {
         />
         <span className="login-btn__text">Sign in with Google</span>
       </button>
-    </Content >
+    </Content>
   );
-}
+};

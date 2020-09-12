@@ -2,21 +2,21 @@ import { IResolvers } from 'apollo-server-express';
 import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { Google } from '../../../lib/api';
-import { Database, User } from '../../../lib/types';
+import { Database, ResolverContext, User } from '../../../lib/types';
 import { LogInArgs } from './types';
 
 const cookieOptions = {
   httpOnly: true,
   sameSite: true,
   secure: process.env.NODE_ENV === 'production',
-  signed: true,
+  signed: true
 };
 
 async function logInViaGoogle(
   code: string,
   token: string,
   db: Database,
-  res: Response,
+  res: Response
 ): Promise<User> {
   const { user } = await Google.signIn(code);
 
@@ -29,28 +29,34 @@ async function logInViaGoogle(
     throw new Error('Google login failed');
   }
 
-  const { value: updateResult } = await db.users.findOneAndUpdate({
-    _id: id,
-  }, {
-    $set: {
-      avatar,
-      displayName,
-      email,
-      token,
+  const { value: updateResult } = await db.users.findOneAndUpdate(
+    {
+      _id: id
     },
-  }, {
-    returnOriginal: false,
-  });
+    {
+      $set: {
+        avatar,
+        displayName,
+        email,
+        token
+      }
+    },
+    {
+      returnOriginal: false
+    }
+  );
 
   let userData = updateResult;
 
   if (!userData) {
-    const { ops: [insertResult] } = await db.users.insertOne({
+    const {
+      ops: [insertResult]
+    } = await db.users.insertOne({
       _id: id,
       avatar,
       displayName,
       email,
-      token,
+      token
     });
 
     userData = insertResult;
@@ -58,11 +64,11 @@ async function logInViaGoogle(
 
   res.cookie('userId', id, {
     ...cookieOptions,
-    maxAge: 24 * 60 * 60 * 365 * 1000,
+    maxAge: 24 * 60 * 60 * 365 * 1000
   });
 
   return {
-    ...userData,
+    ...userData
   };
 }
 
@@ -70,43 +76,47 @@ const logInViaCookie = async (
   token: string,
   db: Database,
   req: Request,
-  res: Response,
-): Promise<User | undefined> => {
+  res: Response
+): Promise<User | null> => {
   const { userId } = req.signedCookies;
 
-  const { value: updateResult } = await db.users.findOneAndUpdate({
-    _id: userId,
-  }, {
-    $set: {
-      token,
+  const { value: updateResult } = await db.users.findOneAndUpdate(
+    {
+      _id: userId
     },
-  }, {
-    returnOriginal: false,
-  });
+    {
+      $set: {
+        token
+      }
+    },
+    {
+      returnOriginal: false
+    }
+  );
 
   if (!updateResult) {
     res.clearCookie('userId', cookieOptions);
   }
 
-  return updateResult;
+  return updateResult || null;
 };
 
 export const authResolvers: IResolvers = {
   Query: {
-    authUrl: () => {
+    authUrl: (): string => {
       try {
         return Google.generateAuthUrl();
       } catch (error) {
         throw new Error(`Failed to generate authUrl: ${error}`);
       }
-    },
+    }
   },
   Mutation: {
     logIn: (
       _root: undefined,
       { input }: LogInArgs,
-      { db, req, res }: { db: Database, req: Request, res: Response },
-    ): Promise<User | undefined> => {
+      { db, req, res }: ResolverContext
+    ): Promise<User | null> => {
       try {
         const code = input ? input.code : null;
         const token = crypto.randomBytes(16).toString('hex');
@@ -122,14 +132,14 @@ export const authResolvers: IResolvers = {
     },
     logOut: (
       _root: undefined,
-      _args: {},
-      { res }: { res: Response },
-    ) => {
+      _args: undefined,
+      { res }: Pick<ResolverContext, 'res'>
+    ): void => {
       try {
         res.clearCookie('userId', cookieOptions);
       } catch (error) {
         throw new Error('Failed to log out.');
       }
-    },
-  },
+    }
+  }
 };

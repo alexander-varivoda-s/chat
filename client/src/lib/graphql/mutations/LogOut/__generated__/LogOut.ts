@@ -13,5 +13,5 @@ export interface LogOut_logOut {
 }
 
 export interface LogOut {
-  logOut: LogOut_logOut | null;
+  logOut: LogOut_logOut;
 }

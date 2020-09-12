@@ -1,4 +1,13 @@
-import { ApolloClient, ApolloProvider, InMemoryCache, useMutation } from '@apollo/client';
+import {
+  ApolloClient,
+  ApolloProvider,
+  HttpLink,
+  InMemoryCache,
+  split,
+  useMutation
+} from '@apollo/client';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { getMainDefinition } from '@apollo/client/utilities';
 import { Layout, Spin } from 'antd';
 import 'antd/dist/antd.css';
 import React, { useEffect, useRef, useState } from 'react';
@@ -6,19 +15,45 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { AppHeader } from './lib/components';
 import { LOG_IN } from './lib/graphql';
-import { LogIn as LogInData, LogInVariables } from './lib/graphql/mutations/LogIn/__generated__/LogIn';
+import {
+  LogIn as LogInData,
+  LogInVariables
+} from './lib/graphql/mutations/LogIn/__generated__/LogIn';
 import { User } from './lib/types';
 import { Home, Login } from './sections';
 import './styles/index.scss';
 
+const httpLink = new HttpLink({
+  uri: '/api',
+  headers: {
+    'CSRF-TOKEN': sessionStorage.getItem('token') || ''
+  }
+});
+
+const wsLink = new WebSocketLink({
+  uri: `ws://${window.location.host}/graphql`,
+  options: {
+    reconnect: true
+  }
+});
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+    );
+  },
+  wsLink,
+  httpLink
+);
+
 const { Content } = Layout;
 
 const client = new ApolloClient({
-  uri: '/api',
-  cache: new InMemoryCache(),
-  headers: {
-    'CSRF-TOKEN': sessionStorage.getItem('token') || '',
-  },
+  link: splitLink,
+  cache: new InMemoryCache()
 });
 
 const initialUser: User = {
@@ -32,17 +67,17 @@ const initialUser: User = {
 const getCodeFromUrl = () => {
   const params = new URL(window.location.href).searchParams;
   return params.get('code') || '';
-}
+};
 
 const App = () => {
   const [user, setUser] = useState<User>(initialUser);
 
   const [logIn, { loading }] = useMutation<LogInData, LogInVariables>(LOG_IN, {
     onCompleted: (data) => {
-      const user = data?.logIn;
-      if (user) {
-        setUser(user);
-        sessionStorage.setItem('token', user.token);
+      const loggedInUser = data?.logIn;
+      if (loggedInUser) {
+        setUser(loggedInUser);
+        sessionStorage.setItem('token', loggedInUser.token);
       }
     }
   });
@@ -63,7 +98,7 @@ const App = () => {
           <Spin size="large" tip="Starting app..." />
         </Content>
       </Layout>
-    )
+    );
   }
 
   return (
@@ -72,7 +107,7 @@ const App = () => {
       {user.id ? <Home /> : <Login code={code} setUser={setUser} />}
     </Layout>
   );
-}
+};
 
 ReactDOM.render(
   <React.StrictMode>
