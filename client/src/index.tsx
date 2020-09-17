@@ -4,7 +4,7 @@ import {
   HttpLink,
   InMemoryCache,
   split,
-  useMutation
+  useMutation,
 } from '@apollo/client';
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { getMainDefinition } from '@apollo/client/utilities';
@@ -17,7 +17,7 @@ import { AppHeader } from './lib/components';
 import { LOG_IN } from './lib/graphql';
 import {
   LogIn as LogInData,
-  LogInVariables
+  LogInVariables,
 } from './lib/graphql/mutations/LogIn/__generated__/LogIn';
 import { User } from './lib/types';
 import { Home, Login } from './sections';
@@ -26,15 +26,15 @@ import './styles/index.scss';
 const httpLink = new HttpLink({
   uri: '/api',
   headers: {
-    'CSRF-TOKEN': sessionStorage.getItem('token') || ''
-  }
+    'CSRF-TOKEN': sessionStorage.getItem('token') || '',
+  },
 });
 
 const wsLink = new WebSocketLink({
   uri: `ws://${window.location.host}/graphql`,
   options: {
-    reconnect: true
-  }
+    reconnect: true,
+  },
 });
 
 const splitLink = split(
@@ -53,7 +53,7 @@ const { Content } = Layout;
 
 const client = new ApolloClient({
   link: splitLink,
-  cache: new InMemoryCache()
+  cache: new InMemoryCache(),
 });
 
 const initialUser: User = {
@@ -61,7 +61,7 @@ const initialUser: User = {
   displayName: null,
   email: null,
   avatar: null,
-  token: null
+  token: null,
 };
 
 const getCodeFromUrl = () => {
@@ -79,7 +79,7 @@ const App = () => {
         setUser(loggedInUser);
         sessionStorage.setItem('token', loggedInUser.token);
       }
-    }
+    },
   });
 
   const logInRef = useRef(logIn);

@@ -7,26 +7,18 @@
 // GraphQL subscription operation: OnNewDirectMessage
 // ====================================================
 
-export interface OnNewDirectMessage_directMessageCreated_messages_author {
+export interface OnNewDirectMessage_directMessageCreated_author {
   __typename: "User";
   id: string;
   displayName: string;
-  email: string;
-  avatar: string;
-}
-
-export interface OnNewDirectMessage_directMessageCreated_messages {
-  __typename: "Message";
-  id: string;
-  content: string;
-  author: OnNewDirectMessage_directMessageCreated_messages_author;
-  created: any;
 }
 
 export interface OnNewDirectMessage_directMessageCreated {
-  __typename: "Chat";
+  __typename: "Message";
   id: string;
-  messages: OnNewDirectMessage_directMessageCreated_messages[] | null;
+  content: string;
+  author: OnNewDirectMessage_directMessageCreated_author;
+  created: any;
 }
 
 export interface OnNewDirectMessage {

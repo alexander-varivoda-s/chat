@@ -10,6 +10,6 @@ export const displaySuccessNotification = (
 ): void => {
   notification.success({
     message: notificationMessage,
-    description
+    description,
   });
 };

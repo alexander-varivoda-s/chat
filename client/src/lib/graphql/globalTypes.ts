@@ -8,11 +8,16 @@
 //==============================================================
 
 export interface DirectMessageInput {
-  userId: string;
+  chatId: string;
+  content: string;
 }
 
 export interface LogInInput {
   code: string;
+}
+
+export interface OpenChatInput {
+  participant: string;
 }
 
 //==============================================================

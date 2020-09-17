@@ -1,7 +1,18 @@
 import { IResolvers, PubSub } from 'apollo-server-express';
 import { ObjectId } from 'mongodb';
-import { Chat, ChatType, Message, ResolverContext } from '../../../lib/types';
-import { ChatArgs, ChatMessagesArgs, SendDirectMessageArgs } from './types';
+import {
+  Chat,
+  ChatType,
+  Message,
+  ResolverContext,
+  User,
+} from '../../../lib/types';
+import {
+  ChatArgs,
+  ChatMessagesArgs,
+  OpenChatArgs,
+  SendDirectMessageArgs,
+} from './types';
 
 const pubSub = new PubSub();
 
@@ -15,83 +26,131 @@ export const chatResolvers: IResolvers = {
     ): Promise<Message[]> => {
       const cursor = await db.messages.find({
         _id: {
-          $in: chat.messages
-        }
+          $in: chat.messages,
+        },
       });
-      cursor.skip(page > 0 ? first * (page - 1) : 0);
-      cursor.limit(first);
+
+      cursor.sort({ created: -1 });
+
+      if (first && page) {
+        cursor.skip(page > 0 ? first * (page - 1) : 0);
+      }
+
+      if (first) {
+        cursor.limit(first);
+      }
 
       return cursor.toArray();
-    }
+    },
+    participants: async (
+      chat: Chat,
+      _args: undefined,
+      { db }: Pick<ResolverContext, 'db'>
+    ): Promise<User[]> => {
+      const cursor = await db.users.find({
+        _id: {
+          $in: chat.participants,
+        },
+      });
+
+      return cursor.toArray();
+    },
   },
   Query: {
     chat: async (
       _root: undefined,
-      args: ChatArgs,
+      { input }: ChatArgs,
       { db }: Pick<ResolverContext, 'db'>
-    ): Promise<Chat | null> => {
-      return db.chats.findOne({ _id: new ObjectId(args.input.chatId) });
-    }
+    ): Promise<Chat> => {
+      const chat = await db.chats.findOne({ _id: new ObjectId(input.chatId) });
+
+      if (!chat) {
+        throw new Error(`Chat with id "${input.chatId}" does not exists!`);
+      }
+
+      return chat;
+    },
   },
   Mutation: {
     newDirectMessage: async (
       _root: undefined,
-      args: SendDirectMessageArgs,
+      { input }: SendDirectMessageArgs,
       { db, req }: Pick<ResolverContext, 'db' | 'req'>
-    ): Promise<Chat | undefined> => {
+    ): Promise<Message> => {
       const { userId } = req.signedCookies;
-      const {
-        input: { userId: receiverId }
-      } = args;
 
-      if (userId === receiverId) {
-        throw new Error('Trying to send direct message to same user!');
+      try {
+        const {
+          ops: [newMessage],
+        } = await db.messages.insertOne({
+          content: input.content,
+          author: userId,
+          created: new Date(),
+        });
+
+        const chat = await db.chats.findOne({
+          _id: new ObjectId(input.chatId),
+        });
+
+        if (!chat) {
+          throw new Error('Chat not found!');
+        }
+
+        await db.chats.findOneAndUpdate(
+          { _id: chat._id },
+          {
+            $set: {
+              messages: [...chat.messages, newMessage._id],
+            },
+          }
+        );
+
+        pubSub.publish('DIRECT_MESSAGE_CREATED', { message: newMessage });
+
+        return newMessage;
+      } catch (error) {
+        throw new Error(`Failed to send direct message: ${error}`);
       }
-
-      const {
-        ops: [newMessage]
-      } = await db.messages.insertOne({
-        content: 'New Message',
-        author: userId,
-        created: new Date()
-      });
+    },
+    openChat: async (
+      _root: undefined,
+      { input }: OpenChatArgs,
+      { db, req }: Pick<ResolverContext, 'db' | 'req'>
+    ): Promise<Chat> => {
+      const { userId } = req.signedCookies;
+      const participants = [userId, input.participant];
 
       let chat = await db.chats.findOne({
         type: ChatType.Direct,
-        participants: [userId, receiverId]
+        participants: {
+          $in: participants,
+        },
       });
 
       if (!chat) {
-        const {
-          ops: [newChat]
-        } = await db.chats.insertOne({
-          type: ChatType.Direct,
-          participants: [userId, receiverId],
-          messages: []
-        });
+        try {
+          const {
+            ops: [newChat],
+          } = await db.chats.insertOne({
+            type: ChatType.Direct,
+            participants,
+            messages: [],
+          });
 
-        chat = newChat;
+          chat = newChat;
+        } catch (error) {
+          throw new Error(`Failed to open chat: ${error}`);
+        }
       }
 
-      const { value: updatedChat } = await db.chats.findOneAndUpdate(
-        { _id: chat._id },
-        {
-          $set: {
-            messages: [...chat.messages, newMessage._id]
-          }
-        }
-      );
-
-      pubSub.publish('DIRECT_MESSAGE_CREATED', { chat });
-
-      return updatedChat;
-    }
+      return chat;
+    },
   },
   Subscription: {
     directMessageCreated: {
       subscribe: (): AsyncIterator<string> =>
         pubSub.asyncIterator('DIRECT_MESSAGE_CREATED'),
-      resolve: (payload: { chat: Chat }): Chat => payload.chat
-    }
-  }
+      resolve: (payload: { message: Message }): Message => payload.message,
+    },
+  },
 };

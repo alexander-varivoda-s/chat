@@ -1,7 +1,8 @@
 import { ObjectId } from 'mongodb';
 
 export interface SendDirectMessageInput {
-  userId: ObjectId;
+  chatId: ObjectId;
+  content: string;
 }
 
 export interface SendDirectMessageArgs {
@@ -17,6 +18,14 @@ export interface ChatArgs {
 }
 
 export interface ChatMessagesArgs {
-  first: number;
-  page: number;
+  first?: number;
+  page?: number;
+}
+
+export interface OpenChatInput {
+  participant: ObjectId;
+}
+
+export interface OpenChatArgs {
+  input: OpenChatInput;
 }

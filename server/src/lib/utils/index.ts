@@ -10,6 +10,6 @@ export const authorize = async (
 
   return db.users.findOne({
     _id: userId,
-    token
+    token,
   });
 };

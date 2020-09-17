@@ -11,8 +11,8 @@ export const Google = {
       access_type: 'online',
       scope: [
         'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/userinfo.profile'
-      ]
+        'https://www.googleapis.com/auth/userinfo.profile',
+      ],
     }),
   // eslint-disable-next-line camelcase
   signIn: async (code: string): Promise<{ user: people_v1.Schema$Person }> => {
@@ -24,11 +24,11 @@ export const Google = {
       .people({ version: 'v1', auth: client })
       .people.get({
         resourceName: 'people/me',
-        personFields: 'emailAddresses,names,photos'
+        personFields: 'emailAddresses,names,photos',
       });
 
     return {
-      user: data
+      user: data,
     };
-  }
+  },
 };

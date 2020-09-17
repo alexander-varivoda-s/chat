@@ -8,7 +8,7 @@ export const connectToDatabase = async (): Promise<Database> => {
 
   const client = await MongoClient.connect(url, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
   });
 
   const db = client.db(DB_NAME);
@@ -16,6 +16,6 @@ export const connectToDatabase = async (): Promise<Database> => {
   return {
     messages: db.collection('messages'),
     users: db.collection('users'),
-    chats: db.collection('chats')
+    chats: db.collection('chats'),
   };
 };

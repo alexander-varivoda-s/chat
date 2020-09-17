@@ -6,14 +6,14 @@ import { useHistory } from 'react-router-dom';
 import { LOG_IN } from '../../lib/graphql';
 import {
   LogIn as LogInData,
-  LogInVariables
+  LogInVariables,
 } from '../../lib/graphql/mutations/LogIn/__generated__/LogIn';
 import { AUTH_URL } from '../../lib/graphql/queries/AuthUrl';
 import { AuthUrl as AuthUrlData } from '../../lib/graphql/queries/AuthUrl/__generated__/AuthUrl';
 import { User } from '../../lib/types';
 import {
   displayErrorMessage,
-  displaySuccessNotification
+  displaySuccessNotification,
 } from '../../lib/utils';
 import GoogleLightNormal from './assets/google_light_normal.svg';
 import './styles/index.scss';
@@ -45,14 +45,14 @@ export const Login = ({ code, setUser }: Props): JSX.Element => {
         );
         history.replace('/');
       }
-    }
+    },
   });
   const logInRef = useRef(logIn);
 
   const handleSignInBtnClick = async () => {
     try {
       const { data } = await client.query<AuthUrlData>({
-        query: AUTH_URL
+        query: AUTH_URL,
       });
 
       if (data && data.authUrl) {
@@ -68,9 +68,9 @@ export const Login = ({ code, setUser }: Props): JSX.Element => {
       logInRef.current({
         variables: {
           input: {
-            code
-          }
-        }
+            code,
+          },
+        },
       });
     }
   }, [code]);

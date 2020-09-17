@@ -4,7 +4,7 @@ import { Collection, ObjectId } from 'mongodb';
 // eslint-disable-next-line no-shadow
 export enum ChatType {
   Direct = 'DIRECT',
-  Channel = 'CHANNEL'
+  Channel = 'CHANNEL',
 }
 
 export interface User {
@@ -25,7 +25,7 @@ export interface Message {
 export interface Chat {
   _id: ObjectId;
   type: ChatType;
-  participants: User[];
+  participants: string[];
   messages: ObjectId[];
 }
 

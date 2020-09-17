@@ -7,6 +7,12 @@ export const FETCH_CHAT = gql`
       messages(page: 1, first: 10) {
         id
         content
+        author {
+          id
+          displayName
+          email
+          avatar
+        }
       }
     }
   }

@@ -1,19 +1,20 @@
 import { gql } from '@apollo/client';
 
-export const SEND_DIRECT_MESSAGE = gql`
-  mutation NewDirectMessage($input: DirectMessageInput) {
-    newDirectMessage(input: $input) {
+export const OPEN_CHAT = gql`
+  mutation OpenChat($input: OpenChatInput, $first: Int = 10, $page: Int = 1) {
+    openChat(input: $input) {
       id
-      messages(page: 1, first: 1) {
+      messages(first: $first, page: $page) {
         id
         content
         author {
           id
           displayName
-          email
-          avatar
         }
         created
+      }
+      participants {
+        id
       }
     }
   }

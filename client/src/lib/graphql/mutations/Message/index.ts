@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
-export const NEW_DIRECT_MESSAGE = gql`
-  subscription OnNewDirectMessage {
-    directMessageCreated {
+export const SEND_DIRECT_MESSAGE = gql`
+  mutation NewDirectMessage($input: DirectMessageInput) {
+    newDirectMessage(input: $input) {
       id
       content
       author {

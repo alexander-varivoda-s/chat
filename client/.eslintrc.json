@@ -20,6 +20,7 @@
     "plugin:react/recommended",
     "airbnb",
     "plugin:prettier/recommended",
+    "prettier/react",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended"
   ],
@@ -48,6 +49,9 @@
     "no-console": "off"
   },
   "settings": {
+    "react": {
+      "version": "detect"
+    },
     "import/resolver": {
       "node": {
         "extensions": [".js", ".jsx", ".ts", ".tsx"]

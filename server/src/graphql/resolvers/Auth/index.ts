@@ -9,7 +9,7 @@ const cookieOptions = {
   httpOnly: true,
   sameSite: true,
   secure: process.env.NODE_ENV === 'production',
-  signed: true
+  signed: true,
 };
 
 async function logInViaGoogle(
@@ -31,18 +31,18 @@ async function logInViaGoogle(
 
   const { value: updateResult } = await db.users.findOneAndUpdate(
     {
-      _id: id
+      _id: id,
     },
     {
       $set: {
         avatar,
         displayName,
         email,
-        token
-      }
+        token,
+      },
     },
     {
-      returnOriginal: false
+      returnOriginal: false,
     }
   );
 
@@ -50,13 +50,13 @@ async function logInViaGoogle(
 
   if (!userData) {
     const {
-      ops: [insertResult]
+      ops: [insertResult],
     } = await db.users.insertOne({
       _id: id,
       avatar,
       displayName,
       email,
-      token
+      token,
     });
 
     userData = insertResult;
@@ -64,11 +64,11 @@ async function logInViaGoogle(
 
   res.cookie('userId', id, {
     ...cookieOptions,
-    maxAge: 24 * 60 * 60 * 365 * 1000
+    maxAge: 24 * 60 * 60 * 365 * 1000,
   });
 
   return {
-    ...userData
+    ...userData,
   };
 }
 
@@ -82,15 +82,15 @@ const logInViaCookie = async (
 
   const { value: updateResult } = await db.users.findOneAndUpdate(
     {
-      _id: userId
+      _id: userId,
     },
     {
       $set: {
-        token
-      }
+        token,
+      },
     },
     {
-      returnOriginal: false
+      returnOriginal: false,
     }
   );
 
@@ -109,7 +109,7 @@ export const authResolvers: IResolvers = {
       } catch (error) {
         throw new Error(`Failed to generate authUrl: ${error}`);
       }
-    }
+    },
   },
   Mutation: {
     logIn: (
@@ -140,6 +140,6 @@ export const authResolvers: IResolvers = {
       } catch (error) {
         throw new Error('Failed to log out.');
       }
-    }
-  }
+    },
+  },
 };

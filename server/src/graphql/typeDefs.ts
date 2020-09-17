@@ -17,7 +17,12 @@ export const typeDefs = gql`
   }
 
   input DirectMessageInput {
-    userId: ID!
+    chatId: ID!
+    content: String!
+  }
+
+  input OpenChatInput {
+    participant: ID!
   }
 
   type User {
@@ -38,22 +43,24 @@ export const typeDefs = gql`
   type Chat {
     id: ID!
     type: ChatType!
-    participants: [User!]
-    messages(first: Int!, page: Int!): [Message!]
+    participants: [User!]!
+    messages(first: Int, page: Int): [Message!]!
   }
 
   type Query {
     authUrl: String!
     chat(input: ChatInput): Chat!
+    users: [User!]!
   }
 
   type Mutation {
-    logIn(input: LogInInput): User!
+    logIn(input: LogInInput): User
     logOut: User!
-    newDirectMessage(input: DirectMessageInput): Chat!
+    newDirectMessage(input: DirectMessageInput): Message!
+    openChat(input: OpenChatInput): Chat!
   }
 
   type Subscription {
-    directMessageCreated: Chat!
+    directMessageCreated: Message!
   }
 `;

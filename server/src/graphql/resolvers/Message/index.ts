@@ -10,8 +10,8 @@ export const messageResolvers: IResolvers = {
       { db }: Pick<ResolverContext, 'db'>
     ): Promise<User | null> => {
       return db.users.findOne({
-        _id: message.author
+        _id: message.author,
       });
-    }
-  }
+    },
+  },
 };

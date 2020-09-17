@@ -1,5 +1,6 @@
 import { WechatOutlined } from '@ant-design/icons';
 import { useMutation } from '@apollo/client';
+
 import {
   Avatar,
   Button,
@@ -8,7 +9,7 @@ import {
   Layout,
   Menu,
   Row,
-  Typography
+  Typography,
 } from 'antd';
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -16,6 +17,7 @@ import { LOG_OUT } from '../../graphql/mutations/LogOut';
 import { LogOut as LogOutData } from '../../graphql/mutations/LogOut/__generated__/LogOut';
 import { User } from '../../types';
 import { displayErrorMessage } from '../../utils';
+
 import './styles/index.scss';
 
 interface Props {
@@ -35,12 +37,12 @@ export const AppHeader = ({ user, setUser }: Props): JSX.Element => {
         displayName: null,
         email: null,
         avatar: null,
-        token: null
+        token: null,
       });
     },
     onError: () => {
       displayErrorMessage('Failed to log out! Please try again later!');
-    }
+    },
   });
 
   const menu = user.id ? (
