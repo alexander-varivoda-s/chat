@@ -133,10 +133,11 @@ export const authResolvers: IResolvers = {
     logOut: (
       _root: undefined,
       _args: undefined,
-      { res }: Pick<ResolverContext, 'res'>
-    ): void => {
+      { res, user }: Pick<ResolverContext, 'res' | 'user'>
+    ): User => {
       try {
         res.clearCookie('userId', cookieOptions);
+        return user;
       } catch (error) {
         throw new Error('Failed to log out.');
       }

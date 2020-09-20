@@ -1,4 +1,4 @@
-import { IResolvers, PubSub } from 'apollo-server-express';
+import { IResolvers } from 'apollo-server-express';
 import { ObjectId } from 'mongodb';
 import {
   Chat,
@@ -13,8 +13,6 @@ import {
   OpenChatArgs,
   SendDirectMessageArgs,
 } from './types';
-
-const pubSub = new PubSub();
 
 export const chatResolvers: IResolvers = {
   Chat: {
@@ -75,16 +73,14 @@ export const chatResolvers: IResolvers = {
     newDirectMessage: async (
       _root: undefined,
       { input }: SendDirectMessageArgs,
-      { db, req }: Pick<ResolverContext, 'db' | 'req'>
+      { db, user, pubSub }: Pick<ResolverContext, 'db' | 'user' | 'pubSub'>
     ): Promise<Message> => {
-      const { userId } = req.signedCookies;
-
       try {
         const {
           ops: [newMessage],
         } = await db.messages.insertOne({
           content: input.content,
-          author: userId,
+          author: user._id,
           created: new Date(),
         });
 
@@ -105,7 +101,7 @@ export const chatResolvers: IResolvers = {
           }
         );
 
-        pubSub.publish('DIRECT_MESSAGE_CREATED', { message: newMessage });
+        await pubSub.publish('DIRECT_MESSAGE_CREATED', { message: newMessage });
 
         return newMessage;
       } catch (error) {
@@ -115,10 +111,17 @@ export const chatResolvers: IResolvers = {
     openChat: async (
       _root: undefined,
       { input }: OpenChatArgs,
-      { db, req }: Pick<ResolverContext, 'db' | 'req'>
+      { db, user }: Pick<ResolverContext, 'db' | 'user'>
     ): Promise<Chat> => {
-      const { userId } = req.signedCookies;
-      const participants = [userId, input.participant];
+      const participant = await db.users.findOne({
+        _id: input.participant,
+      });
+
+      if (!participant) {
+        throw new Error(`Invalid participant ID specified!`);
+      }
+
+      const participants = [user._id, participant._id];
 
       let chat = await db.chats.findOne({
         type: ChatType.Direct,
@@ -148,7 +151,11 @@ export const chatResolvers: IResolvers = {
   },
   Subscription: {
     directMessageCreated: {
-      subscribe: (): AsyncIterator<string> =>
+      subscribe: (
+        _root: undefined,
+        _args: undefined,
+        { pubSub }: Pick<ResolverContext, 'pubSub'>
+      ): AsyncIterator<string> =>
         pubSub.asyncIterator('DIRECT_MESSAGE_CREATED'),
       resolve: (payload: { message: Message }): Message => payload.message,
     },

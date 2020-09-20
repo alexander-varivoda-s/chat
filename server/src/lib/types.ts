@@ -1,3 +1,4 @@
+import { PubSub } from 'apollo-server-express';
 import { Request, Response } from 'express';
 import { Collection, ObjectId } from 'mongodb';
 
@@ -39,4 +40,6 @@ export interface ResolverContext {
   db: Database;
   req: Request;
   res: Response;
+  pubSub: PubSub;
+  user: User;
 }

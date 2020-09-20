@@ -23,7 +23,7 @@ export interface ChatMessagesArgs {
 }
 
 export interface OpenChatInput {
-  participant: ObjectId;
+  participant: string;
 }
 
 export interface OpenChatArgs {

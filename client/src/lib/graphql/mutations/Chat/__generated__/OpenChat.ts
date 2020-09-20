@@ -41,4 +41,6 @@ export interface OpenChat {
 
 export interface OpenChatVariables {
   input?: OpenChatInput | null;
+  first?: number | null;
+  page?: number | null;
 }
